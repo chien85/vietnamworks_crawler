@@ -27,7 +27,7 @@ To deploy to an existing python gear (python 2.7 recommended), please follow the
 2. Bare-clone and mirror-push the source code to your gear
 ```
 git clone --bare https://github.com/trananhtuan/vietnamworks_crawler
-cd old-repository.git
+cd vietnamworks_crawler.git
 git push --mirror ssh://APP_USERNAME@APPNAME-DOMAIN.rhcloud.com/~/git/tmp.git/
 cd ..
 rm -rf vietnamworks_crawler.git

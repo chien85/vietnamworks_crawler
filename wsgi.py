@@ -162,7 +162,7 @@ DB_FILE='jobs.sqlite'
 def application(environ, start_response):
 
     ctype = 'text/plain'
-    path_prefix = '/cgi'
+    path_prefix = ''
     if environ['PATH_INFO'] == path_prefix + '/health':
         response_body = "1"
     elif environ['PATH_INFO'] == path_prefix + '/env':

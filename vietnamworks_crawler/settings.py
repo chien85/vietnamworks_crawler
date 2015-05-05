@@ -16,7 +16,12 @@ NEWSPIDER_MODULE = 'vietnamworks_crawler.spiders'
 USER_AGENT = 'Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36'
 
 ITEM_PIPELINES = {
-    'vietnamworks_crawler.pipelines.NoLaterThanDaysPipeline':100, 
+#    'vietnamworks_crawler.pipelines.NoLaterThanDaysPipeline':100,
     'vietnamworks_crawler.pipelines.DuplicatesPipeline': 300,
     'vietnamworks_crawler.pipelines.MaxCountPipeline': 800,
+    'vietnamworks_crawler.pipelines.SqlitePipeline': 900,
+}
+DOWNLOADER_MIDDLEWARES = {
+    'vietnamworks_crawler.middlewares.IgnoreVisitedItems': 500,
+    'vietnamworks_crawler.middlewares.GoogleCacheMiddleware': 600,
 }

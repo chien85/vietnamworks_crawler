@@ -5,7 +5,10 @@
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
+from scrapy.conf import settings
 from scrapy.exceptions import DropItem
+from vietnamworks_crawler.items import JobItem
+import dblite
 import datetime
 
 # remove duplicates
@@ -52,3 +55,23 @@ class NoLaterThanDaysPipeline(object):
         else:
             return item
 			
+class SqlitePipeline(object):
+    def __init__(self):
+        self.ds = None
+
+    def open_spider(self, spider):
+        self.ds = dblite.open(JobItem, 'sqlite://jobs.sqlite:items', autocommit=True)
+
+    def close_spider(self, spider):
+        self.ds.commit()
+        self.ds.close()
+
+    def process_item(self, item, spider):
+        if isinstance(item, JobItem):
+            try:
+                self.ds.put(item)
+            except dblite.DuplicateItem:
+                raise DropItem("Duplicate item found: %s" % item)
+        else:
+            raise DropItem("Unknown item type, %s" % type(item))
+        return item

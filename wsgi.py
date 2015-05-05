@@ -205,7 +205,12 @@ def application(environ, start_response):
         print q
         items = []
 
-        con = sqlite3.connect(DB_FILE)
+
+        script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+        rel_path = DB_FILE
+        abs_file_path = os.path.join(script_dir, rel_path)
+
+        con = sqlite3.connect(abs_file_path)
         with con:
             con.row_factory = sqlite3.Row
             cur = con.cursor()
@@ -217,7 +222,7 @@ def application(environ, start_response):
                 item = PyRSS2Gen.RSSItem(
                     title = row['name'],
                     link = row['url'],
-                    description = 'Company :<span id="location">' + row['company'] + '</span><br />' \
+                    description = 'Company: <span id="location">' + row['company'] + '</span><br />' \
                         + 'Location: <span id="location">' + row['location'] + '</span><br />' \
                         + 'Industry: <span id="industry">' + row['industry'] + '</span><br />' \
                         + 'Level: <span id="level">' + row['level'] + '</span><br />' \

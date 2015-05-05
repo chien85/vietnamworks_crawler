@@ -5,7 +5,9 @@ It uses [scrapy] (http://scrapy.org/) engine.
 
 ## Deploy on OpenShift
 To deploy this script on OpenShift, you will need to use a python cartridge with an added cron cartridge, then you need to clone the source code to ~/app-root/runtime/repo
+
 OpenShift can do most of these steps automatically for you. Step by step guide is as follow:
+
 1. Go to [OpenShift application console] (https://openshift.redhat.com/app/console/applications), select Add Application to create a new gear
 2. Select Python (2.7 recommended) on the cartridge selection page
 3. Enter a public domain for your app or use default, select an appropriate gear

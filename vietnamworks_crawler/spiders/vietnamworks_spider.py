@@ -31,8 +31,9 @@ class VietnamWorksSpider(CrawlSpider):
             job['level'] = response.xpath('//*[@itemprop="occupationalCategory"]/*/text()').extract()[0]
             job['company'] = response.xpath('//*[@itemprop="name"]//text()').extract()[0]
             job['companyprofile'] = ''.join(response.xpath('//*[@id="companyprofile"]/node()').extract())
-            job['firstseen'] = datetime.datetime.now()  # regex
-            job['date'] = datetime.datetime.now().date() # aggregated from first-seen
+            now = datetime.datetime.utcnow() # use UTC time (timezone independent)
+            job['firstseen'] = now
+            job['date'] = now.date() # aggregated from first-seen
             # salary information requires login
             # job['salary'] = sel.xpath('//span[contains(@class,"hidden-xs")/span/strong/text()').extract()
 

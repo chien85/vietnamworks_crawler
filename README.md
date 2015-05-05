@@ -10,7 +10,9 @@ OpenShift can do most of these steps automatically for you. Step by step guide i
 2. Select Python (2.7 recommended) on the cartridge selection page
 3. Enter a public domain for your app or use default, select an appropriate gear
 4. On source code field, enter 
-```https://github.com/trananhtuan/vietnamworks_crawler```
+```
+https://github.com/trananhtuan/vietnamworks_crawler
+```
 leave branch empty (or enter the branch you want to use). Click Create Application and wait for OpenShift to create your gear
 5. Go back to [OpenShift application console] (https://openshift.redhat.com/app/console/applications), select your newly created gear
 6. On the application management page, select "see the list of cartridges you can add" and select Cron to add cron cartridge to your gear

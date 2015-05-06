@@ -18,7 +18,7 @@ class DuplicatesPipeline(object):
 
     def process_item(self, item, spider):
         if item['id'] in self.ids_seen:
-            raise DropItem("Duplicate item found: %s" % item)
+            raise DropItem("Duplicate item ID found!")
         else:
             self.ids_seen.add(item['id'])
             return item
@@ -30,7 +30,7 @@ class MaxCountPipeline(object):
 	
     def process_item(self, item, spider):
         if spider.max_count > 0 and self.count > spider.max_count:
-            raise DropItem("Maximum count exceeded: %s" % item)
+            raise DropItem("Maximum count (%d) exceeded!" % spider.max_count)
         else:
             self.count = self.count + 1
             return item
@@ -51,7 +51,7 @@ class NoLaterThanDaysPipeline(object):
         d2 = datetime.datetime.today()
         daysDiff = (d2 - d1).days 
         if daysDiff > spider.days_limit:
-            raise DropItem("Skipped (%d days old): %s" % (daysDiff, item))
+            raise DropItem("Skipped job older than (%d)!" % daysDiff)
         else:
             return item
 			
@@ -71,7 +71,7 @@ class SqlitePipeline(object):
             try:
                 self.ds.put(item)
             except dblite.DuplicateItem:
-                raise DropItem("Duplicate item found: %s" % item)
+                raise DropItem("Duplicate database item found!")
         else:
             raise DropItem("Unknown item type, %s" % type(item))
         return item

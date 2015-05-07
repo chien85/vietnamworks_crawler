@@ -19,38 +19,41 @@ ITEM_PIPELINES = {
     'vietnamworks_crawler.pipelines.RequiredFieldsPipeline': 50,
     'vietnamworks_crawler.pipelines.DuplicatesPipeline': 100,
     'vietnamworks_crawler.pipelines.MaxCountPipeline': 200,
-    'vietnamworks_crawler.pipelines.SqlitePipeline': 800,
-#    'vietnamworks_crawler.pipelines.MySQLStorePipeline': 850
-#    'scrapymongodb.MongoDBPipeline':900,
+#    'vietnamworks_crawler.pipelines.SqlitePipeline': 800,
+#    'vietnamworks_crawler.pipelines.MySQLPipeline': 850
+    'vietnamworks_crawler.pipelines.MongoDBPipeline':900,
 }
 DOWNLOADER_MIDDLEWARES = {
-    'vietnamworks_crawler.middlewares.IgnoreVisitedItems': 500,
+#    'vietnamworks_crawler.middlewares.IgnoreVisitedItems': 500,
     'vietnamworks_crawler.middlewares.GoogleCacheMiddleware': 600,
 }
 
 # MySQL settings
-MYSQL_HOST = 'mysql.hostinger.vn' #'localhost'
-MYSQL_DBNAME = 'u639036552_mysql'
-MYSQL_USER = 'u639036552_admin'
-MYSQL_PASSWD = '880117'
+MYSQL_HOST = 'localhost'
+MYSQL_DBNAME = 'mysql'
+MYSQL_USER = 'admin'
+MYSQL_PASSWD = 'password'
 
 # MongoDB settings
-MONGODB_SERVER = 'mongodb://admin:880117@ds063870.mongolab.com/vietnamworks' # to provide username and password, enter mongodb://user:pass@host:port
-MONGODB_PORT = 63870 # 27017
-MONGODB_DB = 'vietnamworks'
+MONGODB_SERVER = 'localhost' # to provide username and password, enter mongodb://user:pass@host:port
+MONGODB_PORT = 27017
+MONGODB_DB = 'mongodb'
 MONGODB_COLLECTION = 'items'
 MONGODB_UNIQ_KEY = 'url'
-MONGODB_ITEM_ID_FIELD = '_id'
+MONGODB_ITEM_ID_FIELD = 'id'
 MONGODB_SAFE = False
 
 # Mail SMTP settings
 # for Gmail: https://support.google.com/a/answer/176600?hl=en
 MAIL_ENABLED = True # enable/disable mailer
 MAIL_HOST = 'smtp.gmail.com'
-MAIL_FROM = 'scrapymailer@gmail.com'
-MAIL_TO = 'lusiads@gmail.com' # address to notify
-MAIL_USER  = 'scrapymailer@gmail.com' # if omitted, the MAIL_USER setting will be used. If not given, no SMTP authentication will be performed.
-MAIL_PASS = '109PU5IanUD9'
+MAIL_FROM = 'username@gmail.com'
+MAIL_TO = 'your.email@address.com' # address to notify
+MAIL_USER  = 'username@gmail.com' # if omitted, the MAIL_USER setting will be used. If not given, no SMTP authentication will be performed.
+MAIL_PASS = 'password'
 MAIL_PORT = 465
 MAIL_TLS = False # enforce using SMTP STARTTLS
 MAIL_SSL = True # enforce using a secure SSL connection
+
+# Google Cache settings
+GOOGLE_CACHE_DOMAINS = ['vietnamworks.com', 'www.vietnamworks.com']

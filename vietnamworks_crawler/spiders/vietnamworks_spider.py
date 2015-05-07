@@ -29,7 +29,6 @@ class VietnamWorksSpider(CrawlSpider):
     def parse_job(self, response):
         job = JobItem()
         job['url'] = response.url
-        job['_id'] = int(re.sub(r'.*-(\d+)-jd', r'\1',response.url))
         job['id'] = re.sub(r'.*-(\d+)-jd', r'\1',response.url)
         job['name'] = response.xpath('//*[@itemprop="title"]/text()').extract()[0]
         job['industry'] = ','.join(response.xpath('//*[@itemprop="industry"]/*/text()').extract())
@@ -59,4 +58,4 @@ class VietnamWorksSpider(CrawlSpider):
             mailer = MailSender.from_settings(settings)
             body = "Global stats\n\n"
             body += "\n".join("%-50s : %s" % i for i in self.crawler.stats.get_stats().items())
-            mailer.send(to=[settings['MAIL_TO']], subject="Scraped Items Missing Required Fields", body=body)
+            mailer.send(to=[settings['MAIL_TO']], subject="vietnamworks_crawler: Error Report", body=body)

@@ -93,6 +93,7 @@ class GoogleCacheMiddleware(object):
         if gcd:
             if urlparse(request.url).netloc in gcd:
                 request = request.replace(url=self.google_cache + request.url)
+                #log.msg('* Request is replaced by: '+ request.url, logLevel=log.WARNING)
                 request.meta['google_cache'] = True
                 return request
 

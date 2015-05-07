@@ -10,7 +10,7 @@ from scrapy.item import Item, Field
 class JobItem(Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    _id = Field()
+    _id = Field() # reserved for dblite
     id = Field()
     name = Field()
     url = Field()
@@ -20,7 +20,6 @@ class JobItem(Item):
     location  = Field()
     level = Field()
     # salary = Field()
-    url = Field()
     description = Field()
     requirements = Field()
     date = Field()

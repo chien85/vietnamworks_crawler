@@ -232,7 +232,7 @@ def application(environ, start_response):
                         #+ 'Date: <span id="date">' + row['date'] + '</span><br />',
                     guid = PyRSS2Gen.Guid(row['url']),
                     #pubDate = row['date'],
-                    pubDate = datetime.datetime.strptime(row['firstseen'], '%Y-%m-%d %H:%M:%S.%f').strftime("%a, %d %b %Y %H:%M:%S +0000"),
+                    pubDate = datetime.datetime.strptime(row['firstseen'], '%Y-%m-%d %H:%M:%S.%f').strftime("%a, %d %b %Y %H:%M:%S GMT"),
                 )
                 items.append(item)
 

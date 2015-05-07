@@ -241,7 +241,7 @@ def application(environ, start_response):
             link = "http://www.VietnamWorks.com",
             description = "The latest jobs from VietnamWorks."
                           "Usage: /rss?location=24&location=29&level=3&industry=23&industry=7",
-            lastBuildDate = datetime.datetime.now(),
+            lastBuildDate = datetime.datetime.utcnow(),
             items = items)
 
         response_body = rss.to_xml("UTF-8")

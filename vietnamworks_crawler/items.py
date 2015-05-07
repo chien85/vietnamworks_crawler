@@ -5,25 +5,23 @@
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/items.html
 
-import scrapy
+from scrapy.item import Item, Field
 
-
-class JobItem(scrapy.Item):
+class JobItem(Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    _id = scrapy.Field()
-    id = scrapy.Field()
-    name = scrapy.Field()
-    url = scrapy.Field()
-    company = scrapy.Field()
-    companyprofile = scrapy.Field()
-    industry = scrapy.Field()
-    location  = scrapy.Field()
-    level = scrapy.Field()
-    # salary = scrapy.Field()
-    url = scrapy.Field()
-    description = scrapy.Field()
-    requirements = scrapy.Field()
-    date = scrapy.Field()
-    firstseen = scrapy.Field()
-    pass
+    _id = Field()
+    id = Field()
+    name = Field()
+    url = Field()
+    company = Field()
+    companyprofile = Field()
+    industry = Field()
+    location  = Field()
+    level = Field()
+    # salary = Field()
+    url = Field()
+    description = Field()
+    requirements = Field()
+    date = Field()
+    firstseen = Field()

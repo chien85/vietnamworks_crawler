@@ -1,6 +1,10 @@
 from scrapy.contrib.spiders import CrawlSpider, Rule
 from scrapy.contrib.linkextractors import LinkExtractor
+from scrapy.mail import MailSender
+from scrapy.xlib.pydispatch import dispatcher
 from scrapy.http import HtmlResponse
+from scrapy.signalmanager import SignalManager
+from scrapy import signals
 from vietnamworks_crawler.items import JobItem
 import re, datetime
 
@@ -9,33 +13,50 @@ class VietnamWorksSpider(CrawlSpider):
     name = 'vietnamworks'
     allowed_domains = ['vietnamworks.com']
     # scrape first 99 pages
-    start_urls = ['http://www.vietnamworks.com/job-search/all-jobs/page-%d' % d for d in range(1, 100) ]
+    start_urls = ['http://www.vietnamworks.com/job-search/all-jobs/page-%d' % d for d in range(1, 2) ]
     # rules = [Rule(LinkExtractor(allow=['/.*?-\d+-jv']), 'parse_list')]
     rules = [Rule(LinkExtractor(allow=['/.*-\d+-jd']), 'parse_job', follow=False)]
 
     # pass additional arguments to the spider
-    def __init__(self, days_limit=0, max_count=0, *args, **kwargs):
-        #self.days_limit = int(days_limit)
+    def __init__(self, mail_enabled=0, max_count=0, *args, **kwargs):
+        self.mail_enabled = int(mail_enabled)
         self.max_count = int(max_count)
         super(VietnamWorksSpider, self).__init__(*args, **kwargs)
+        # register a signal listener to listen for spider_closed signal
+        SignalManager(dispatcher.Any).connect(
+            self.spider_closed_handler, signal=signals.spider_closed)
 
     def parse_job(self, response):
-            job = JobItem()
-            job['url'] = response.url
-            job['id'] = re.sub(r'.*-(\d+)-jd', r'\1',response.url)
-            job['name'] = response.xpath('//*[@itemprop="title"]/text()').extract()[0]
-            job['industry'] = ','.join(response.xpath('//*[@itemprop="industry"]/*/text()').extract())
-            job['location'] = ','.join(response.xpath('//*[@itemprop="address"]//text()').extract())
-            job['description'] = ''.join(response.xpath('//*[@itemprop="description"]/node()').extract())
-            job['requirements'] = ''.join(response.xpath('//*[@itemprop="experienceRequirements"]/node()').extract())
-            job['level'] = response.xpath('//*[@itemprop="occupationalCategory"]/*/text()').extract()[0]
-            job['company'] = response.xpath('//*[@itemprop="name"]//text()').extract()[0]
-            job['companyprofile'] = ''.join(response.xpath('//*[@id="companyprofile"]/node()').extract())
-            now = datetime.datetime.utcnow() # use UTC time (timezone independent)
-            job['firstseen'] = now
-            job['date'] = now.date() # aggregated from first-seen
-            # salary information requires login
-            # job['salary'] = sel.xpath('//span[contains(@class,"hidden-xs")/span/strong/text()').extract()
+        job = JobItem()
+        job['url'] = response.url
+        job['_id'] = int(re.sub(r'.*-(\d+)-jd', r'\1',response.url))
+        job['id'] = re.sub(r'.*-(\d+)-jd', r'\1',response.url)
+        job['name'] = response.xpath('//*[@itemprop="title"]/text()').extract()[0]
+        job['industry'] = ','.join(response.xpath('//*[@itemprop="industry"]/*/text()').extract())
+        job['location'] = ','.join(response.xpath('//*[@itemprop="address"]//text()').extract())
+        job['description'] = ''.join(response.xpath('//*[@itemprop="description"]/node()').extract())
+        job['requirements'] = ''.join(response.xpath('//*[@itemprop="experienceRequirements"]/node()').extract())
+        job['level'] = response.xpath('//*[@itemprop="occupationalCategory"]/*/text()').extract()[0]
+        job['company'] = response.xpath('//*[@itemprop="name"]//text()').extract()[0]
+        job['companyprofile'] = ''.join(response.xpath('//*[@id="companyprofile"]/node()').extract())
+        now = datetime.datetime.utcnow() # use UTC time (timezone independent)
+        job['firstseen'] = now
+        job['date'] = now.date() # aggregated from first-seen
+        # salary information requires login
+        # job['salary'] = sel.xpath('//span[contains(@class,"hidden-xs")/span/strong/text()').extract()
 
-            yield job
+        yield job
 			
+    def spider_closed_handler(self, spider):
+        # notify admin on some critical error events such as missing of required fields (incorrect pattern)
+        # http://stackoverflow.com/questions/12394184/scrapy-call-a-function-when-a-spider-quits
+        settings = self.settings
+        # send email in case a missing required field item has been found
+        # possibly, one or more regex pattern is no longer valid
+        # allow enable mail by settings or commandline argument: scrapy crawl vietnamworks -a max_count=10 -a mail_enabled=1
+        if (settings['MAIL_ENABLED'] or self.mail_enabled) \
+                and self.crawler.stats.get_value('missing_required_field_count'):
+            mailer = MailSender.from_settings(settings)
+            body = "Global stats\n\n"
+            body += "\n".join("%-50s : %s" % i for i in self.crawler.stats.get_stats().items())
+            mailer.send(to=[settings['MAIL_TO']], subject="Scraped Items Missing Required Fields", body=body)

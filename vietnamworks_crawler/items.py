@@ -22,5 +22,6 @@ class JobItem(Item):
     # salary = Field()
     description = Field()
     requirements = Field()
+    preferedlanguage = Field()
     date = Field()
     firstseen = Field()

@@ -13,8 +13,7 @@ class VietnamWorksSpider(CrawlSpider):
     name = 'vietnamworks'
     allowed_domains = ['vietnamworks.com']
     # scrape first 99 pages
-    start_urls = ['http://www.vietnamworks.com/job-search/all-jobs/page-%d' % d for d in range(1, 2) ]
-    # rules = [Rule(LinkExtractor(allow=['/.*?-\d+-jv']), 'parse_list')]
+    start_urls = ['http://www.vietnamworks.com/job-search/all-jobs/page-%d' % d for d in range(1, 100) ]
     rules = [Rule(LinkExtractor(allow=['/.*-\d+-jd']), 'parse_job', follow=False)]
 
     # pass additional arguments to the spider
@@ -31,13 +30,14 @@ class VietnamWorksSpider(CrawlSpider):
         job['url'] = response.url
         job['id'] = re.sub(r'.*-(\d+)-jd', r'\1',response.url)
         job['name'] = response.xpath('//*[@itemprop="title"]/text()').extract()[0]
-        job['industry'] = ','.join(response.xpath('//*[@itemprop="industry"]/*/text()').extract())
-        job['location'] = ','.join(response.xpath('//*[@itemprop="address"]//text()').extract())
+        job['industry'] = ','.join(response.xpath('//h5/text()[contains(.,"Job categories")]/../..//a/text()').extract())
+        job['location'] = ','.join(response.xpath('//*[@itemprop="address"]//a/text()').extract())
         job['description'] = ''.join(response.xpath('//*[@itemprop="description"]/node()').extract())
-        job['requirements'] = ''.join(response.xpath('//*[@itemprop="experienceRequirements"]/node()').extract())
-        job['level'] = response.xpath('//*[@itemprop="occupationalCategory"]/*/text()').extract()[0]
-        job['company'] = response.xpath('//*[@itemprop="name"]//text()').extract()[0]
+        job['requirements'] = ''.join(response.xpath('//*[@itemprop="experienceRequirements "]/node()').extract())
+        job['level'] = response.xpath('//h5/text()[contains(.,"Job level")]/../..//a/text()').extract()[0]
+        job['company'] = response.xpath('//*[@itemprop="name"]//a/text()').extract()[0]
         job['companyprofile'] = ''.join(response.xpath('//*[@id="companyprofile"]/node()').extract())
+        job['preferredlanguage'] = response.xpath('//h5/text()[contains(.,"Preferred language")]/../../p/text()').extract()[0]
         now = datetime.datetime.utcnow() # use UTC time (timezone independent)
         job['firstseen'] = now
         job['date'] = now.date() # aggregated from first-seen

@@ -19,13 +19,13 @@ ITEM_PIPELINES = {
     'vietnamworks_crawler.pipelines.RequiredFieldsPipeline': 50,
     'vietnamworks_crawler.pipelines.DuplicatesPipeline': 100,
     'vietnamworks_crawler.pipelines.MaxCountPipeline': 200,
-#    'vietnamworks_crawler.pipelines.SqlitePipeline': 800,
+    'vietnamworks_crawler.pipelines.SqlitePipeline': 800,
 #    'vietnamworks_crawler.pipelines.MySQLPipeline': 850
-    'vietnamworks_crawler.pipelines.MongoDBPipeline':900,
+#    'vietnamworks_crawler.pipelines.MongoDBPipeline':900,
 }
 DOWNLOADER_MIDDLEWARES = {
 #    'vietnamworks_crawler.middlewares.IgnoreVisitedItems': 500,
-    'vietnamworks_crawler.middlewares.GoogleCacheMiddleware': 600,
+#    'vietnamworks_crawler.middlewares.GoogleCacheMiddleware': 600,
 }
 
 # MySQL settings

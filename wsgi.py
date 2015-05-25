@@ -1,6 +1,23 @@
 #!/usr/bin/python
-import csv, re, traceback, datetime, urlparse, logging, sqlite3, os
+
+# activate virtualenv
+import os
+virtenv = os.environ.get('OPENSHIFT_PYTHON_DIR',
+                         os.path.dirname(os.path.realpath(__file__))) + '/virtenv/'
+virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
+try:
+    execfile(virtualenv, dict(__file__=virtualenv))
+except IOError:
+    pass
+
+#
+# IMPORTANT: Put any additional includes below this line.  If placed above this
+# line, it's possible required libraries won't be in your searchable path
+#
+
+import re, datetime, urlparse, logging, sqlite3
 import PyRSS2Gen
+
 
 def smart_truncate(content, length=100, suffix='...'):
     if len(content) <= length:
@@ -8,179 +25,167 @@ def smart_truncate(content, length=100, suffix='...'):
     else:
         return content[:length].rsplit(' ', 1)[0] + suffix
 
-locations = {'29':'Ho Chi Minh',
-    '24':'Ha Noi',
-    '71':'Mekong Delta',
-    '2':'An Giang',
-    '3':'Ba Ria - Vung Tau',
-    '4':'Bac Can',
-    '5':'Bac Giang',
-    '6':'Bac Lieu',
-    '7':'Bac Ninh',
-    '8':'Ben Tre',
-    '9':'Bien Hoa',
-    '10':'Binh Dinh',
-    '11':'Binh Duong',
-    '12':'Binh Phuoc',
-    '13':'Binh Thuan',
-    '14':'Ca Mau',
-    '15':'Can Tho',
-    '16':'Cao Bang',
-    '17':'Da Nang',
-    '18':'Dac Lac',
-    '69':'Dien Bien',
-    '19':'Dong Nai',
-    '20':'Dong Thap',
-    '21':'Gia Lai',
-    '22':'Ha Giang',
-    '23':'Ha Nam',
-    '25':'Ha Tay',
-    '26':'Ha Tinh',
-    '27':'Hai Duong',
-    '28':'Hai Phong',
-    '30':'Hoa Binh',
-    '31':'Hue',
-    '32':'Hung Yen',
-    '33':'Khanh Hoa',
-    '34':'Kon Tum',
-    '35':'Lai Chau',
-    '36':'Lam Dong',
-    '37':'Lang Son',
-    '38':'Lao Cai',
-    '40':'Nam Dinh',
-    '41':'Nghe An',
-    '42':'Ninh Binh',
-    '43':'Ninh Thuan',
-    '44':'Phu Tho',
-    '45':'Phu Yen',
-    '46':'Quang Binh',
-    '47':'Quang Nam',
-    '48':'Quang Ngai',
-    '49':'Quang Ninh',
-    '50':'Quang Tri',
-    '51':'Soc Trang',
-    '52':'Son La',
-    '53':'Tay Ninh',
-    '54':'Thai Binh',
-    '55':'Thai Nguyen',
-    '56':'Thanh Hoa',
-    '57':'Thua Thien-Hue',
-    '58':'Tien Giang',
-    '59':'Tra Vinh',
-    '60':'Tuyen Quang',
-    '61':'Kien Giang',
-    '62':'Vinh Long',
-    '63':'Vinh Phuc',
-    '65':'Yen Bai',
-    '66':'Other',
-    '70':'International',
-    '72':'Hau Giang',
-    '39':'Long An'}
-industries = {'1':'Accounting',
-    '2':'Administrative/Clerical',
-    '3':'Advertising/Promotion/PR',
-    '4':'Agriculture/Forestry',
-    '37':'Airlines/Tourism/Hotel',
-    '5':'Architecture/Interior Design',
-    '10':'Arts/Design',
-    '58':'Auditing',
-    '67':'Automotive',
-    '42':'Banking',
-    '43':'Chemical/Biochemical',
-    '7':'Civil/Construction',
-    '8':'Consulting',
-    '11':'Customer Service',
-    '12':'Education/Training',
-    '64':'Electrical/Electronics',
-    '15':'Entry level',
-    '16':'Environment/Waste Services',
-    '17':'Executive management',
-    '18':'Expatriate Jobs in Vietnam',
-    '19':'Export-Import',
-    '63':'Fashion/Lifestyle',
-    '59':'Finance/Investment',
-    '54':'Food &amp; Beverage',
-    '36':'Freight/Logistics',
-    '22':'Health/Medical Care',
-    '66':'High Technology',
-    '23':'Human Resources',
-    '68':'Industrial Products',
-    '24':'Insurance',
-    '57':'Internet/Online Media',
-    '47':'Interpreter/Translator',
-    '55':'IT - Hardware/Networking',
-    '35':'IT - Software',
-    '25':'Legal/Contracts',
-    '62':'Luxury Goods',
-    '27':'Marketing',
-    '65':'Mechanical',
-    '21':'NGO/Non-Profit',
-    '28':'Oil/Gas',
-    '71':'Overseas Jobs',
-    '6':'Pharmaceutical/Biotech',
-    '69':'Planning/Projects',
-    '26':'Production/Process',
-    '49':'Purchasing/Supply Chain',
-    '70':'QA/QC',
-    '30':'Real Estate',
-    '32':'Retail/Wholesale',
-    '33':'Sales',
-    '34':'Sales Technical',
-    '56':'Securities &amp; Trading',
-    '41':'Telecommunications',
-    '51':'Temporary/Contract',
-    '52':'Textiles/Garments/Footwear',
-    '48':'TV/Media/Newspaper',
-    '53':'Warehouse',
-    '39':'Other',}
+
+locations = {'29': 'Ho Chi Minh',
+             '24': 'Ha Noi',
+             '71': 'Mekong Delta',
+             '2': 'An Giang',
+             '3': 'Ba Ria - Vung Tau',
+             '4': 'Bac Can',
+             '5': 'Bac Giang',
+             '6': 'Bac Lieu',
+             '7': 'Bac Ninh',
+             '8': 'Ben Tre',
+             '9': 'Bien Hoa',
+             '10': 'Binh Dinh',
+             '11': 'Binh Duong',
+             '12': 'Binh Phuoc',
+             '13': 'Binh Thuan',
+             '14': 'Ca Mau',
+             '15': 'Can Tho',
+             '16': 'Cao Bang',
+             '17': 'Da Nang',
+             '18': 'Dac Lac',
+             '69': 'Dien Bien',
+             '19': 'Dong Nai',
+             '20': 'Dong Thap',
+             '21': 'Gia Lai',
+             '22': 'Ha Giang',
+             '23': 'Ha Nam',
+             '25': 'Ha Tay',
+             '26': 'Ha Tinh',
+             '27': 'Hai Duong',
+             '28': 'Hai Phong',
+             '30': 'Hoa Binh',
+             '31': 'Hue',
+             '32': 'Hung Yen',
+             '33': 'Khanh Hoa',
+             '34': 'Kon Tum',
+             '35': 'Lai Chau',
+             '36': 'Lam Dong',
+             '37': 'Lang Son',
+             '38': 'Lao Cai',
+             '40': 'Nam Dinh',
+             '41': 'Nghe An',
+             '42': 'Ninh Binh',
+             '43': 'Ninh Thuan',
+             '44': 'Phu Tho',
+             '45': 'Phu Yen',
+             '46': 'Quang Binh',
+             '47': 'Quang Nam',
+             '48': 'Quang Ngai',
+             '49': 'Quang Ninh',
+             '50': 'Quang Tri',
+             '51': 'Soc Trang',
+             '52': 'Son La',
+             '53': 'Tay Ninh',
+             '54': 'Thai Binh',
+             '55': 'Thai Nguyen',
+             '56': 'Thanh Hoa',
+             '57': 'Thua Thien-Hue',
+             '58': 'Tien Giang',
+             '59': 'Tra Vinh',
+             '60': 'Tuyen Quang',
+             '61': 'Kien Giang',
+             '62': 'Vinh Long',
+             '63': 'Vinh Phuc',
+             '65': 'Yen Bai',
+             '66': 'Other',
+             '70': 'International',
+             '72': 'Hau Giang',
+             '39': 'Long An', }
+
+industries = {'1': 'Accounting',
+              '2': 'Administrative/Clerical',
+              '3': 'Advertising/Promotion/PR',
+              '4': 'Agriculture/Forestry',
+              '37': 'Airlines/Tourism/Hotel',
+              '5': 'Architecture/Interior Design',
+              '10': 'Arts/Design',
+              '58': 'Auditing',
+              '67': 'Automotive',
+              '42': 'Banking',
+              '43': 'Chemical/Biochemical',
+              '7': 'Civil/Construction',
+              '8': 'Consulting',
+              '11': 'Customer Service',
+              '12': 'Education/Training',
+              '64': 'Electrical/Electronics',
+              '15': 'Entry level',
+              '16': 'Environment/Waste Services',
+              '17': 'Executive management',
+              '18': 'Expatriate Jobs in Vietnam',
+              '19': 'Export-Import',
+              '63': 'Fashion/Lifestyle',
+              '59': 'Finance/Investment',
+              '54': 'Food &amp; Beverage',
+              '36': 'Freight/Logistics',
+              '22': 'Health/Medical Care',
+              '66': 'High Technology',
+              '23': 'Human Resources',
+              '68': 'Industrial Products',
+              '24': 'Insurance',
+              '57': 'Internet/Online Media',
+              '47': 'Interpreter/Translator',
+              '55': 'IT - Hardware/Networking',
+              '35': 'IT - Software',
+              '25': 'Legal/Contracts',
+              '62': 'Luxury Goods',
+              '27': 'Marketing',
+              '65': 'Mechanical',
+              '21': 'NGO/Non-Profit',
+              '28': 'Oil/Gas',
+              '71': 'Overseas Jobs',
+              '6': 'Pharmaceutical/Biotech',
+              '69': 'Planning/Projects',
+              '26': 'Production/Process',
+              '49': 'Purchasing/Supply Chain',
+              '70': 'QA/QC',
+              '30': 'Real Estate',
+              '32': 'Retail/Wholesale',
+              '33': 'Sales',
+              '34': 'Sales Technical',
+              '56': 'Securities &amp; Trading',
+              '41': 'Telecommunications',
+              '51': 'Temporary/Contract',
+              '52': 'Textiles/Garments/Footwear',
+              '48': 'TV/Media/Newspaper',
+              '53': 'Warehouse',
+              '39': 'Other', }
 
 levels = ['New Grad/Entry Level/Internship',
-    'Experienced (Non-Manager)',
-    'Team Leader/Supervisor',
-    'Manager',
-    'Vice Director',
-    'Director',
-    'CEO',
-    'Vice President',
-    'President',]
+          'Experienced (Non-Manager)',
+          'Team Leader/Supervisor',
+          'Manager',
+          'Vice Director',
+          'Director',
+          'CEO',
+          'Vice President',
+          'President', ]
 
-DB_FILE='jobs.sqlite'
-
-# uncomment these next lines to active python virtual environment on OpenShift
-#virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
-#virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
-#try:
-#    execfile(virtualenv, dict(__file__=virtualenv))
-#except IOError:
-#    pass
-
-#
-# IMPORTANT: Put any additional includes below this line.  If placed above this
-# line, it's possible required libraries won't be in your searchable path
-#
+DB_FILE = 'jobs.sqlite'
+ITEM_LIMIT = 50
 
 def application(environ, start_response):
-
     ctype = 'text/plain'
-    path_prefix = ''
-    if environ['PATH_INFO'] == path_prefix + '/health':
+    if environ['PATH_INFO'] == '/health':
         response_body = "1"
-    elif environ['PATH_INFO'] == path_prefix + '/env':
+    elif environ['PATH_INFO'] == '/env':
         response_body = ['%s: %s' % (key, value)
-                    for key, value in sorted(environ.items())]
+                         for key, value in sorted(environ.items())]
         response_body = '\n'.join(response_body)
-    elif environ['PATH_INFO'] == path_prefix + '/rss':
+    elif environ['PATH_INFO'] == '/rss':
         ctype = 'application/rss+xml'
 
         # Returns a dictionary containing lists as values.
         qs = urlparse.parse_qs(environ['QUERY_STRING'])
 
         # In this idiom you must issue a list containing a default value.
-        name = qs.get('name', [''])[0] # get only first param
+        name = qs.get('name', [''])[0]  # get only first param
         value = qs.get('value', [''])[0]
         max = int(qs.get('max', ['0'])[0])
-        loc = qs.get('location', ['']) # get a list of loc ie. location=1&location=2..
-        ind = qs.get('industry', ['']) # get a list of industries ie. industry=1&industry=2
+        loc = qs.get('location', [''])  # get a list of loc ie. location=1&location=2..
+        ind = qs.get('industry', [''])  # get a list of industries ie. industry=1&industry=2
         min_level = int(qs.get('level', ['0'])[0])
 
         # min_level == 2 means Supervisor, == 3 means Manager etc
@@ -194,19 +199,19 @@ def application(environ, start_response):
 
         # construct select query
         q = "SELECT * FROM items "
-        filters = [' OR '.join(["(location LIKE '%%%s%%')" %s for s in selected_locations if selected_locations])]
-        filters.append(' OR '.join(["(level = '%s')" %s for s in selected_levels if min_level > 0]))
-        filters.append(' OR '.join(["(industry LIKE '%%%s%%')" %s for s in selected_industries if selected_industries]))
+        filters = [' OR '.join(["(location LIKE '%%%s%%')" % s for s in selected_locations if selected_locations])]
+        filters.append(' OR '.join(["(level = '%s')" % s for s in selected_levels if min_level > 0]))
+        filters.append(
+            ' OR '.join(["(industry LIKE '%%%s%%')" % s for s in selected_industries if selected_industries]))
         # workaround to remove empty string from list
         filters = filter(None, filters)
         if filters:
-            q += ' WHERE ' + 'AND '.join('(%s)' %s for s in filters if s)
-        q += " ORDER BY firstseen DESC LIMIT %d " % (max if (max > 0 and max < 50) else 50)
+            q += ' WHERE ' + 'AND '.join('(%s)' % s for s in filters if s)
+        q += " ORDER BY firstseen DESC LIMIT %d " % (max if (max > 0 and max < ITEM_LIMIT) else ITEM_LIMIT)
         print q
         items = []
 
-
-        script_dir = os.path.dirname(__file__) #<-- absolute dir the script is in
+        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = DB_FILE
         abs_file_path = os.path.join(script_dir, rel_path)
 
@@ -220,29 +225,33 @@ def application(environ, start_response):
             # create feed items
             for row in matches:
                 item = PyRSS2Gen.RSSItem(
-                    title = row['name'],
-                    link = row['url'],
-                    description = 'Company: <span id="location">' + row['company'] + '</span><br />' \
-                        + 'Location: <span id="location">' + row['location'] + '</span><br />' \
-                        + 'Industry: <span id="industry">' + row['industry'] + '</span><br />' \
-                        + 'Level: <span id="level">' + row['level'] + '</span><br />' \
-                        + '<span id="companyprofile">' + smart_truncate(row['companyprofile'], 150) + '</span><br />' \
-                        + '<h3>Description</h3><p><span id="description">' + smart_truncate(row['description'], 250) + '</span></p>' \
-                        + '<h3>Requirements</h3><p><span id="requirements">' + smart_truncate(row['requirements'], 250) + '</span></p>',
-                        #+ 'Date: <span id="date">' + row['date'] + '</span><br />',
-                    guid = PyRSS2Gen.Guid(row['url']),
+                    title=row['name'],
+                    link=row['url'],
+                    description='Company: <span id="location">' + row['company'] + '</span><br />' \
+                                + 'Location: <span id="location">' + row['location'] + '</span><br />' \
+                                + 'Industry: <span id="industry">' + row['industry'] + '</span><br />' \
+                                + 'Level: <span id="level">' + row['level'] + '</span><br />' \
+                                + '<span id="companyprofile">' + smart_truncate(row['companyprofile'],
+                                                                                150) + '</span><br />' \
+                                + '<h3>Description</h3><p><span id="description">' + smart_truncate(row['description'],
+                                                                                                    250) + '</span></p>' \
+                                + '<h3>Requirements</h3><p><span id="requirements">' + smart_truncate(
+                        row['requirements'], 250) + '</span></p>',
+                    # + 'Date: <span id="date">' + row['date'] + '</span><br />',
+                    guid=PyRSS2Gen.Guid(row['url']),
                     #pubDate = row['date'],
-                    pubDate = datetime.datetime.strptime(row['firstseen'], '%Y-%m-%d %H:%M:%S.%f').strftime("%a, %d %b %Y %H:%M:%S GMT"),
+                    pubDate=datetime.datetime.strptime(row['firstseen'], '%Y-%m-%d %H:%M:%S.%f').strftime(
+                        "%a, %d %b %Y %H:%M:%S GMT"),
                 )
                 items.append(item)
 
         rss = PyRSS2Gen.RSS2(
-            title = "VietnamWorks Job Feed",
-            link = "http://www.VietnamWorks.com",
-            description = "The latest jobs from VietnamWorks."
-                          "Usage: /rss?location=24&location=29&level=3&industry=23&industry=7",
-            lastBuildDate = datetime.datetime.utcnow(),
-            items = items)
+            title="VietnamWorks Job Feed",
+            link="http://www.VietnamWorks.com",
+            description="The latest jobs from VietnamWorks."
+                        "Usage: /rss?location=24&location=29&level=3&industry=23&industry=7",
+            lastBuildDate=datetime.datetime.utcnow(),
+            items=items)
 
         response_body = rss.to_xml("UTF-8")
     else:
@@ -467,7 +476,7 @@ pre {
 
                 <h3>Usage Notes</h3>
 			<ul>
-				<li>This feed is real-time. It is refresh on intervals.</li>
+				<li>This feed is not real-time. It is refreshed on intervals.</li>
 				<li>Reposted jobs (jobs with the same ID) are not to be included in the feed.</li>
 				<li>This feed comes at no warranty whatsoever. Use at your own risk.</li>
 			</ul>
@@ -656,6 +665,7 @@ All categories (Default)
 #
 if __name__ == '__main__':
     from wsgiref.simple_server import make_server
+
     httpd = make_server('localhost', 8051, application)
     # Wait for a single request, serve it and quit.
     httpd.handle_request()

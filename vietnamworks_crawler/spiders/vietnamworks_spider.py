@@ -17,9 +17,10 @@ class VietnamWorksSpider(CrawlSpider):
     rules = [Rule(LinkExtractor(allow=['/.*-\d+-jd']), 'parse_job', follow=False)]
 
     # pass additional arguments to the spider
-    def __init__(self, mail_enabled=0, max_count=0, *args, **kwargs):
+    def __init__(self, mail_enabled=0, max_count=0, sqlite_file='jobs.sqlite', *args, **kwargs):
         self.mail_enabled = int(mail_enabled)
         self.max_count = int(max_count)
+        self.sqlite_file = sqlite_file
         super(VietnamWorksSpider, self).__init__(*args, **kwargs)
         # register a signal listener to listen for spider_closed signal
         SignalManager(dispatcher.Any).connect(

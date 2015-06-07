@@ -10,7 +10,8 @@ from scrapy.exceptions import DropItem
 from scrapy import log
 from vietnamworks_crawler.items import JobItem
 from twisted.enterprise import adbapi
-import dblite, datetime
+from pymongo import errors
+import dblite, datetime, pymongo
 
 # remove duplicates
 class DuplicatesPipeline(object):
@@ -65,7 +66,7 @@ class SqlitePipeline(object):
         self.ds = None
 
     def open_spider(self, spider):
-        self.ds = dblite.open(JobItem, 'sqlite://jobs.sqlite:items', autocommit=True)
+        self.ds = dblite.open(JobItem, 'sqlite://' + spider.sqlite_file + ':items', autocommit=True)
 
     def close_spider(self, spider):
         self.ds.commit()
@@ -76,10 +77,34 @@ class SqlitePipeline(object):
             try:
                 self.ds.put(item)
             except dblite.DuplicateItem:
-                raise DropItem("Duplicate database item found: %s" % item)
+                raise DropItem("Duplicate SQLite item found: %s" % item)
         else:
             raise DropItem("Unknown item type, %s" % type(item))
         return item
+
+class MongoDBPipeline (object):
+    def __init__(self):
+        self.connection = None
+
+    def open_spider(self, spider):
+        self.connection = pymongo.MongoClient()
+        #self.connection = pymongo.MongoClient(settings['MONGODB_URI'])
+        self.db = connection[settings['MONGODB_DB']]
+        self.collection = db[settings['MONGODB_COLLECTION']]
+
+    def close_spider(self, spider):
+        self.connection.close()
+
+    def process_item(self, item, spider):
+        if isinstance(item, JobItem):
+            try:
+                self.collection.insert_one(dict(item), upsert=True)
+            except errors.DuplicateKeyError:
+                raise DropItem("Duplicate MongoDB item found: %s" % item)
+        else:
+            raise DropItem("Unknown item type, %s" % type(item))
+        return item
+
 
 class RequiredFieldsPipeline(object):
     """A pipeline to ensure the item have the required fields."""

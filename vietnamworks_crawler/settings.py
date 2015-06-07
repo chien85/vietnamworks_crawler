@@ -19,9 +19,10 @@ ITEM_PIPELINES = {
     'vietnamworks_crawler.pipelines.RequiredFieldsPipeline': 50,
     'vietnamworks_crawler.pipelines.DuplicatesPipeline': 100,
     'vietnamworks_crawler.pipelines.MaxCountPipeline': 200,
-    'vietnamworks_crawler.pipelines.SqlitePipeline': 800,
+#    'vietnamworks_crawler.pipelines.SqlitePipeline': 800,
 #    'vietnamworks_crawler.pipelines.MySQLPipeline': 850
-#    'vietnamworks_crawler.pipelines.MongoDBPipeline':900,
+    'vietnamworks_crawler.pipelines.MongoDBPipeline':900,
+    'scrapy_mongodb.MongoDBPipeline': 950,
 }
 DOWNLOADER_MIDDLEWARES = {
 #    'vietnamworks_crawler.middlewares.IgnoreVisitedItems': 500,
@@ -35,13 +36,19 @@ MYSQL_USER = 'admin'
 MYSQL_PASSWD = 'password'
 
 # MongoDB settings
-MONGODB_SERVER = 'localhost' # to provide username and password, enter mongodb://user:pass@host:port
-MONGODB_PORT = 27017
-MONGODB_DB = 'mongodb'
+import os
+_MONGODB_HOST = os.environ.get('OPENSHIFT_MONGODB_DB_HOST','localhost')
+_MONGODB_PORT = os.environ.get('OPENSHIFT_MONGODB_DB_PORT','27017')
+_MONGODB_USER = os.environ.get('OPENSHIFT_MONGODB_DB_USERNAME','admin')
+_MONGODB_PASSWD = os.environ.get('OPENSHIFT_MONGODB_DB_PASSWORD','')
+#MONGODB_URI = 'mongodb://' + _MONGODB_USER + ':' + _MONGODB_PASSWD + ' \
+#
+#                                                    ''@'  + _MONGODB_DB_HOST + _MONGODB_DB_PORT  # 'mongodb://localhost:27017'
+MONGODB_URI = os.environ.get('OPENSHIFT_MONGODB_DB_URL','mongodb://localhost:27017')
+MONGODB_DB = 'python'
 MONGODB_COLLECTION = 'items'
-MONGODB_UNIQ_KEY = 'url'
-MONGODB_ITEM_ID_FIELD = 'id'
-MONGODB_SAFE = False
+MONGODB_UNIQUE_KEY  = 'id'
+#MONGODB_ITEM_ID_FIELD = 'id'
 
 # Mail SMTP settings
 # for Gmail: https://support.google.com/a/answer/176600?hl=en
@@ -57,3 +64,8 @@ MAIL_SSL = True # enforce using a secure SSL connection
 
 # Google Cache settings
 GOOGLE_CACHE_DOMAINS = ['vietnamworks.com', 'www.vietnamworks.com']
+
+# crawl in BFO (FIFO) order
+DEPTH_PRIORITY = 1
+SCHEDULER_DISK_QUEUE = 'scrapy.squeue.PickleFifoDiskQueue'
+SCHEDULER_MEMORY_QUEUE = 'scrapy.squeue.FifoMemoryQueue'

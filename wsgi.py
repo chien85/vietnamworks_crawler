@@ -211,9 +211,10 @@ def application(environ, start_response):
         print q
         items = []
 
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+        data_dir = os.environ.get('OPENSHIFT_DATA_DIR',
+                         os.path.dirname(os.path.realpath(__file__)))  # <-- OpenShift data dir or current dir
         rel_path = DB_FILE
-        abs_file_path = os.path.join(script_dir, rel_path)
+        abs_file_path = os.path.join(data_dir, rel_path)
 
         con = sqlite3.connect(abs_file_path)
         with con:
